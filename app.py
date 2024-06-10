@@ -13,11 +13,20 @@ CITIES = ["bern", "thun", "biel", "solothurn", "aarau", "brugg", "augsburg", "ko
 
 # Set page configuration
 st.set_page_config(
-    page_title="Aare River Monitoring Dashboard",
+    page_title="Aare Monitoring Dashboard",
     page_icon="🌊",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
 )
+
+hide_streamlit_style = """
+<style>
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+</style>
+
+"""
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 # Function to fetch Aare river data
 def fetch_aare_data(city):
@@ -43,8 +52,8 @@ def fetch_all_data(cities):
     return data
 
 # Title and description
-st.title("Aare River Real-time Monitoring Dashboard")
-st.write("Monitor real-time conditions of the Aare river across multiple cities.")
+st.title("Aare Real-time Monitoring Dashboard")
+st.write("Monitor real-time conditions of the Aare river across multiple cities powered by aare.guru.")
 
 # Sidebar for city selection and date input
 st.sidebar.title("Select a City")
