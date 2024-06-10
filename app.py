@@ -38,6 +38,7 @@ def fetch_aare_data(city):
         return {city: None}
 
 # Fetch data for all cities using multithreading
+@st.cache_data(ttl=600)
 def fetch_all_data(cities):
     data = {}
     with ThreadPoolExecutor() as executor:
@@ -50,13 +51,19 @@ def fetch_all_data(cities):
 st.title("Aare River Real-time Monitoring Dashboard")
 st.write("Monitor real-time conditions of the Aare river across multiple cities.")
 
+# Sidebar for city selection and date input
+st.sidebar.title("Select a City")
+
 # Display loading animation while fetching data
 with st.spinner("Fetching data... 🌊💧"):
-    time.sleep(2)  # Simulate data fetching time
     data = fetch_all_data(CITIES)
 
-# Display real-time data for each city
-st.header("Current Conditions")
+# Alerts for specific conditions
+alert_temp_threshold = st.sidebar.number_input("Set temperature alert threshold (°C)", value=18)
+alert_flow_threshold = st.sidebar.number_input("Set flow rate alert threshold (m³/s)", value=150)
+
+temperature_alerts = []
+flow_rate_alerts = []
 current_data = []
 for city in CITIES:
     city_data = data.get(city)
@@ -64,36 +71,37 @@ for city in CITIES:
         temperature = city_data.get("aare", {}).get("temperature", "N/A")
         flow_rate = city_data.get("aare", {}).get("flow", "N/A")
         current_data.append({"City": city.capitalize(), "Temperature (°C)": temperature, "Flow Rate (m³/s)": flow_rate})
-
-current_df = pd.DataFrame(current_data)
-st.dataframe(current_df)
-
-# Temperature comparison chart
-st.subheader("Temperature Comparison")
-fig_temp = px.bar(current_df, x="City", y="Temperature (°C)", color="City", title="Current Temperature Comparison")
-st.plotly_chart(fig_temp)
-
-# Flow rate comparison chart
-st.subheader("Flow Rate Comparison")
-fig_flow = px.bar(current_df, x="City", y="Flow Rate (m³/s)", color="City", title="Current Flow Rate Comparison")
-st.plotly_chart(fig_flow)
-
-# Alerts for specific conditions
-st.header("Alerts")
-alert_temp_threshold = st.number_input("Set temperature alert threshold (°C)", value=18)
-alert_flow_threshold = st.number_input("Set flow rate alert threshold (m³/s)", value=150)
-
-temperature_alerts = []
-flow_rate_alerts = []
-for city in CITIES:
-    city_data = data.get(city)
-    if city_data:
-        temperature = city_data.get("aare", {}).get("temperature", "N/A")
-        flow_rate = city_data.get("aare", {}).get("flow", "N/A")
         if temperature != "N/A" and temperature > alert_temp_threshold:
             temperature_alerts.append((city.capitalize(), temperature))
         if flow_rate != "N/A" and flow_rate > alert_flow_threshold:
             flow_rate_alerts.append((city.capitalize(), flow_rate))
+
+# Display alerts at the top
+st.header("Alerts")
+if temperature_alerts or flow_rate_alerts:
+    if temperature_alerts:
+        st.subheader("Temperature Alerts")
+        for alert in temperature_alerts:
+            st.warning(f"Temperature alert in {alert[0]}: {alert[1]} °C", icon="🔥")
+    if flow_rate_alerts:
+        st.subheader("Flow Rate Alerts")
+        for alert in flow_rate_alerts:
+            st.error(f"Flow rate alert in {alert[0]}: {alert[1]} m³/s", icon="🌊")
+else:
+    st.write("No alerts")
+
+# Display charts instead of table
+current_df = pd.DataFrame(current_data)
+
+# Temperature comparison chart
+st.subheader("Temperature Comparison")
+fig_temp = px.bar(current_df, x="City", y="Temperature (°C)", color="City", title="Current Temperature Comparison")
+st.plotly_chart(fig_temp, use_container_width=True)
+
+# Flow rate comparison chart
+st.subheader("Flow Rate Comparison")
+fig_flow = px.bar(current_df, x="City", y="Flow Rate (m³/s)", color="City", title="Current Flow Rate Comparison")
+st.plotly_chart(fig_flow, use_container_width=True)
 
 # Display alerts on the map
 m = folium.Map(location=[46.8182, 8.2275], zoom_start=8, tiles='cartodb positron')  # Centered on Switzerland, using a modern tile layer
@@ -119,17 +127,6 @@ for city in CITIES:
             icon=folium.Icon(color=marker_color, icon='info-sign')
         ).add_to(m)
 
+# Optimize map for mobile
 st.subheader("Alerts Map")
-folium_static(m)
-
-if temperature_alerts or flow_rate_alerts:
-    if temperature_alerts:
-        st.subheader("Temperature Alerts")
-        for alert in temperature_alerts:
-            st.warning(f"Temperature alert in {alert[0]}: {alert[1]} °C", icon="🔥")
-    if flow_rate_alerts:
-        st.subheader("Flow Rate Alerts")
-        for alert in flow_rate_alerts:
-            st.error(f"Flow rate alert in {alert[0]}: {alert[1]} m³/s", icon="🌊")
-else:
-    st.write("No alerts")
+folium_static(m, width=800, height=400)
