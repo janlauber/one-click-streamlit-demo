@@ -1,4 +1,3 @@
-import time
 from concurrent.futures import ThreadPoolExecutor
 
 import pandas as pd
@@ -11,6 +10,14 @@ API_URL = "https://aareguru.existenz.ch/v2018/current"
 APP_NAME = "my.app.ch"
 APP_VERSION = "1.0.42"
 CITIES = ["bern", "thun", "biel", "solothurn", "aarau", "brugg", "augsburg", "konstanz"]
+
+# Set page configuration
+st.set_page_config(
+    page_title="Aare River Monitoring Dashboard",
+    page_icon="🌊",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
 # Function to fetch Aare river data
 def fetch_aare_data(city):
@@ -63,20 +70,17 @@ for city in CITIES:
             temperature_alerts.append((city.capitalize(), temperature))
         if flow_rate != "N/A" and flow_rate > alert_flow_threshold:
             flow_rate_alerts.append((city.capitalize(), flow_rate))
-
-# Display alerts at the top
-st.header("Alerts")
+            
+st.sidebar.header("Alerts")
 if temperature_alerts or flow_rate_alerts:
     if temperature_alerts:
-        st.subheader("Temperature Alerts")
+        st.sidebar.subheader("Temperature Alerts")
         for alert in temperature_alerts:
-            st.warning(f"Temperature alert in {alert[0]}: {alert[1]} °C", icon="🔥")
+            st.sidebar.warning(f"{alert[0]}: {alert[1]} °C", icon="🔥")
     if flow_rate_alerts:
-        st.subheader("Flow Rate Alerts")
+        st.sidebar.subheader("Flow Rate Alerts")
         for alert in flow_rate_alerts:
-            st.error(f"Flow rate alert in {alert[0]}: {alert[1]} m³/s", icon="🌊")
-else:
-    st.write("No alerts")
+            st.sidebar.info(f"{alert[0]}: {alert[1]} m³/s", icon="🌊")
 
 # Display charts instead of table
 current_df = pd.DataFrame(current_data)
