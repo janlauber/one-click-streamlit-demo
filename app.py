@@ -59,8 +59,8 @@ with st.spinner("Fetching data... 🌊💧"):
     data = fetch_all_data(CITIES)
 
 # Alerts for specific conditions
-alert_temp_threshold = st.sidebar.number_input("Set temperature alert threshold (°C)", value=18)
-alert_flow_threshold = st.sidebar.number_input("Set flow rate alert threshold (m³/s)", value=150)
+alert_temp_threshold = st.sidebar.number_input("Set temperature alert threshold (°C)", value=20)
+alert_flow_threshold = st.sidebar.number_input("Set flow rate alert threshold (m³/s)", value=100)
 
 temperature_alerts = []
 flow_rate_alerts = []
@@ -129,4 +129,4 @@ for city in CITIES:
 
 # Optimize map for mobile
 st.subheader("Alerts Map")
-folium_static(m, width=800, height=400)
+folium_static(m, width=350, height=250)
