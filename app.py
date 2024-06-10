@@ -1,28 +1,16 @@
 import time
 from concurrent.futures import ThreadPoolExecutor
 
-import folium
 import pandas as pd
 import plotly.express as px
 import requests
 import streamlit as st
-from streamlit_folium import folium_static
 
 # Constants
 API_URL = "https://aareguru.existenz.ch/v2018/current"
 APP_NAME = "my.app.ch"
 APP_VERSION = "1.0.42"
 CITIES = ["bern", "thun", "biel", "solothurn", "aarau", "brugg", "augsburg", "konstanz"]
-CITY_COORDINATES = {
-    "bern": [46.94809, 7.44744],
-    "thun": [46.75736, 7.62798],
-    "biel": [47.13236, 7.24411],
-    "solothurn": [47.20883, 7.53298],
-    "aarau": [47.39254, 8.04422],
-    "brugg": [47.48413, 8.20826],
-    "augsburg": [48.37054, 10.89779],
-    "konstanz": [47.66374, 9.17582]
-}
 
 # Function to fetch Aare river data
 def fetch_aare_data(city):
@@ -59,8 +47,8 @@ with st.spinner("Fetching data... 🌊💧"):
     data = fetch_all_data(CITIES)
 
 # Alerts for specific conditions
-alert_temp_threshold = st.sidebar.number_input("Set temperature alert threshold (°C)", value=20)
-alert_flow_threshold = st.sidebar.number_input("Set flow rate alert threshold (m³/s)", value=100)
+alert_temp_threshold = st.sidebar.number_input("Set temperature alert threshold (°C)", value=18)
+alert_flow_threshold = st.sidebar.number_input("Set flow rate alert threshold (m³/s)", value=180)
 
 temperature_alerts = []
 flow_rate_alerts = []
@@ -103,30 +91,7 @@ st.subheader("Flow Rate Comparison")
 fig_flow = px.bar(current_df, x="City", y="Flow Rate (m³/s)", color="City", title="Current Flow Rate Comparison")
 st.plotly_chart(fig_flow, use_container_width=True)
 
-# Display alerts on the map
-m = folium.Map(location=[46.8182, 8.2275], zoom_start=8, tiles='cartodb positron')  # Centered on Switzerland, using a modern tile layer
-
-# Function to determine the marker color
-def get_marker_color(city, temperature, flow_rate):
-    if (city.capitalize(), temperature) in temperature_alerts:
-        return 'orange'
-    elif (city.capitalize(), flow_rate) in flow_rate_alerts:
-        return 'red'
-    else:
-        return 'blue'
-
-for city in CITIES:
-    city_data = data.get(city)
-    if city_data:
-        temperature = city_data.get("aare", {}).get("temperature", "N/A")
-        flow_rate = city_data.get("aare", {}).get("flow", "N/A")
-        marker_color = get_marker_color(city, temperature, flow_rate)
-        folium.Marker(
-            CITY_COORDINATES[city],
-            popup=folium.Popup(html=f"<b>{city.capitalize()}</b><br>Temp: {temperature} °C<br>Flow: {flow_rate} m³/s", max_width=200),
-            icon=folium.Icon(color=marker_color, icon='info-sign')
-        ).add_to(m)
-
-# Optimize map for mobile
-st.subheader("Alerts Map")
-folium_static(m, width=350, height=250)
+# Historical data line chart
+st.subheader("Historical Data Comparison")
+fig_hist = px.line(current_df, x="City", y=["Temperature (°C)", "Flow Rate (m³/s)"], title="Historical Data Comparison", markers=True)
+st.plotly_chart(fig_hist, use_container_width=True)
