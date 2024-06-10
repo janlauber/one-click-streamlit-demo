@@ -1,0 +1,34 @@
+apiVersion: one-click.dev/v1alpha1
+kind: Rollout
+spec:
+  env: []
+  horizontalScale:
+    maxReplicas: 5
+    minReplicas: 2
+    targetCPUUtilizationPercentage: 80
+  image:
+    password: ''
+    registry: ghcr.io
+    repository: janlauber/one-click-streamlit-demo
+    tag: '1718044624'
+    username: ''
+  interfaces:
+    - ingress:
+        ingressClass: nginx-external
+        rules:
+          - host: aare.dev.one-click.dev
+            path: /
+            tls: true
+            tlsSecretName: wildcard-cert
+      name: http
+      port: 8501
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 300m
+      memory: 256Mi
+  secrets: []
+  serviceAccountName: one-click
+  volumes: []
