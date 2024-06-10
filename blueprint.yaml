@@ -10,7 +10,7 @@ spec:
     password: ''
     registry: ghcr.io
     repository: janlauber/one-click-streamlit-demo
-    tag: '1718044624'
+    tag: '1718045747'
     username: ''
   interfaces:
     - ingress:
