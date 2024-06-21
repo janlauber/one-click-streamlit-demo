@@ -52,11 +52,11 @@ def fetch_all_data(cities):
     return data
 
 # Title and description
-st.title("Aare Real-time Monitoring Dashboard")
+st.title("Aare Real-time Monitoring Dashboard Test")
 st.write("Monitor real-time conditions of the Aare river across multiple cities powered by aare.guru.")
 
 # Sidebar for city selection and date input
-st.sidebar.title("Select a City")
+# st.sidebar.title("Select a City")
 
 # Display loading animation while fetching data
 with st.spinner("Fetching data... 🌊💧"):
